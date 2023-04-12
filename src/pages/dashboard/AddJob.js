@@ -3,11 +3,15 @@ import { FormRow, FormRowSelect } from '../../components';
 import Wrapper from '../../assets/wrappers/DashboardFormPage';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { handleChange ,clearValues} from '../../features/job/jobSlice';
-import { createJob } from '../../features/job/jobSlice';
+import {
+  handleChange,
+  clearValues,
+  createJob,
+  editJob,
+} from '../../features/job/jobSlice';
 
 const AddJob = () => {
-const {user} = useSelector((store)=> store.user)
+  const { user } = useSelector((store) => store.user);
 
   const {
     isLoading,
@@ -22,7 +26,7 @@ const {user} = useSelector((store)=> store.user)
     editJobId,
   } = useSelector((store) => store.job);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,18 +34,30 @@ const {user} = useSelector((store)=> store.user)
       toast.error('Please fill out all fields');
       return;
     }
-    dispatch(createJob({position,company,jobLocation,status,jobType}))
+
+    if (isEditing) {
+      dispatch(
+        editJob({
+          jobId: editJobId,
+          job: { position, company, jobLocation, status, jobType },
+        })
+      );
+      return;
+    }
+    dispatch(createJob({ position, company, jobLocation, status, jobType }));
   };
 
   const handleJobInput = (e) => {
     const name = e.target.name;
     const value = e.target.value;
-    dispatch(handleChange({name,value}))
+    dispatch(handleChange({ name, value }));
   };
 
-  useEffect(()=>{
-    dispatch(handleChange({name:'jobLocation',value:user.location}))
-  },[])
+  useEffect(() => {
+    if (!isEditing) {
+      dispatch(handleChange({ name: 'jobLocation', value: user.location }));
+    }
+  }, []);
 
   return (
     <Wrapper>
@@ -89,7 +105,7 @@ const {user} = useSelector((store)=> store.user)
             <button
               type='button'
               className='btn btn-block clear-btn'
-              onClick={()=>dispatch(clearValues())}
+              onClick={() => dispatch(clearValues())}
             >
               clear
             </button>
